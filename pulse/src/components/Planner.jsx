@@ -130,17 +130,12 @@ export default function Planner({ planner, onAddEntry }) {
     const pending = weekEntries.filter((s) => s.status === 'pending' && !isWorkoutDone(s.scheduled_date)).length;
     const missed = weekEntries.filter((s) => s.status === 'missed').length;
 
-    // Only subtract a moved copy when its original missed entry is still
-    // in the week (adaptive miss moves create a second entry). Availability
-    // moves update the workout in place, so there's no duplicate to subtract.
-    const movedFromDates = new Set(
-      weekEntries
-        .filter((s) => s.is_moved && s.moved_from_date && weekDates.includes(s.moved_from_date))
-        .map((s) => s.moved_from_date)
-    );
+    // A missed workout that was moved leaves two entries (the missed original
+    // and its moved copy). Count that workout once by skipping the copy.
+    // Availability moves update the workout in place, so nothing to skip.
     const movedCopyCount = weekEntries.filter(
-      (s) => s.is_moved && s.moved_from_date && movedFromDates.has(s.moved_from_date)
-        && !weekEntries.some((o) => o.scheduled_date === s.moved_from_date && o.id !== s.id)
+      (s) => s.is_moved && s.moved_from_date
+        && weekEntries.some((o) => o.id !== s.id && o.scheduled_date === s.moved_from_date && o.status === 'missed')
     ).length;
 
     const total = weekEntries.length - movedCopyCount;
