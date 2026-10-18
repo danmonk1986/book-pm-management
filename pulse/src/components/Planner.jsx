@@ -88,7 +88,10 @@ export default function Planner({ planner, onAddEntry }) {
     if (loaded && settings.setup_complete && workouts.length > 0 && Object.keys(availability).length > 0) {
       generateWeek(plannerGetWeekDates(0));
     }
-  }, [loaded, settings, workouts, availability]); // eslint-disable-line react-hooks/exhaustive-deps
+  // `schedule` is a dependency so the week is filled again if another update
+  // (e.g. marking last week's workouts missed) overwrites it in the same pass.
+  // generateWeek only adds what's missing, so this settles after one fill.
+  }, [loaded, settings, workouts, availability, schedule]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (loaded && settings.setup_complete && weekOffset !== 0) {
